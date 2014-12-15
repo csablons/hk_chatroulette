@@ -10,11 +10,14 @@ import flash.media.Video;
 import flash.net.NetConnection;
 import flash.net.NetStream;
 import flash.text.TextField;
+import flash.text.TextFieldAutoSize;
 import flash.text.TextFormat;
 import flash.media.H264VideoStreamSettings;
 
+import flashx.textLayout.formats.TextAlign;
 
-[SWF( width="940", height="880" )]
+
+[SWF( width="1180", height="480" )]
 public class Main extends Sprite {
     private var metaText:TextField = new TextField();
     private var vid_outDescription:TextField = new TextField();
@@ -28,6 +31,12 @@ public class Main extends Sprite {
 
     private var vid_out:Video;
     private var vid_in:Video;
+
+    private const _MARGE              :uint = 10;
+    private const _CAM_WIDTH          :uint = 480;
+    private const _CAM_HEIGHT         :uint = _CAM_WIDTH*(3/4);
+    private const _INFO_ENCODING_WIDTH:uint = 200;
+    private const _INFO_VIDEO_HEIGHT  :uint = 100;
 
 
     //Class constructor
@@ -44,15 +53,15 @@ public class Main extends Sprite {
         //nc.connect("rtmp://example.com/application/mp4:myVideo.mp4");
         nc.client = this;   // TODO Gare !
 
-        cam.setQuality( 90000, 90 );
-        cam.setMode( 640, 480, 30, true );
-        cam.setKeyFrameInterval( 15 );
+        cam.setQuality(90000, 90);
+        cam.setMode(_CAM_WIDTH, _CAM_HEIGHT, 30, true);
+        cam.setKeyFrameInterval(15);
 
         vid_out = new Video();
-        vid_out.x = 150;
-        vid_out.y = 10;
-        vid_out.width = 640;
-        vid_out.height = 480;
+        vid_out.x = _INFO_ENCODING_WIDTH + _MARGE;
+        vid_out.y = _MARGE;
+        vid_out.width = _CAM_WIDTH;
+        vid_out.height = _CAM_HEIGHT;
         addChild( vid_out );
 
         displayPublishingVideo();
@@ -93,8 +102,8 @@ public class Main extends Sprite {
         metaData.profile =  h264Settings.profile;
         metaData.level = h264Settings.level;
         metaData.fps = cam.fps;
-        metaData.height = cam.height;
         metaData.width = cam.width;
+        metaData.height = cam.height;
         metaData.keyFrameInterval = cam.keyFrameInterval;
 
         ns_out.send( "@setDataFrame", "onMetaData", metaData );
@@ -126,12 +135,27 @@ public class Main extends Sprite {
     }
 
     //Display stream metadata and lays out visual components in the UI
-    public function onMetaData( o:Object ):void
-    {
-        metaText.x = 0;
-        metaText.y = 55;
-        metaText.width = 300;
-        metaText.height = 385;
+    public function onMetaData( o:Object ):void {
+        metaTextTitle.text = "- Encoding Settings -";
+        var stylr:TextFormat = new TextFormat();
+            stylr.size = 18;
+            stylr.align = TextAlign.CENTER;
+        metaTextTitle.setTextFormat( stylr );
+        metaTextTitle.textColor = 0xDD7500;
+        metaTextTitle.x = _MARGE;
+        metaTextTitle.y = _MARGE;
+        metaTextTitle.width = _INFO_ENCODING_WIDTH;
+        metaTextTitle.height = 50;
+        metaTextTitle.background = true;
+        metaTextTitle.backgroundColor = 0x1F1F1F;
+        metaTextTitle.border = true;
+        metaTextTitle.borderColor = 0xDD7500;
+        addChild( metaTextTitle );
+
+        metaText.x = metaTextTitle.x;
+        metaText.y = metaTextTitle.y + metaTextTitle.height;
+        metaText.width = metaTextTitle.width;
+        metaText.height = cam.height + _INFO_VIDEO_HEIGHT - metaTextTitle.height;
         metaText.background = true;
         metaText.backgroundColor = 0x1F1F1F;
         metaText.textColor = 0xD9D9D9;
@@ -139,50 +163,34 @@ public class Main extends Sprite {
         metaText.borderColor = 0xDD7500;
         addChild( metaText );
 
-        metaTextTitle.text = "\n             - Encoding Settings -";
-        var stylr:TextFormat = new TextFormat();
-        stylr.size = 18;
-        metaTextTitle.setTextFormat( stylr );
-        metaTextTitle.textColor = 0xDD7500;
-        metaTextTitle.width = 300;
-        metaTextTitle.y = 10;
-        metaTextTitle.height = 50;
-        metaTextTitle.background = true;
-        metaTextTitle.backgroundColor = 0x1F1F1F;
-        metaTextTitle.border = true;
-        metaTextTitle.borderColor = 0xDD7500;
-
-        vid_outDescription.text = "\n\n\n\n                 Live video from webcam \n\n" +
-                "	              Encoded to H.264 in Flash Player";
-        vid_outDescription.background = true;
-        vid_outDescription.backgroundColor = 0x1F1F1F;
-        vid_outDescription.textColor = 0xD9D9D9;
-        vid_outDescription.x = 300;
-        vid_outDescription.y = cam.height;
-        vid_outDescription.width = cam.width;
-        vid_outDescription.height = 200;
-        vid_outDescription.border = true;
-        vid_outDescription.borderColor = 0xDD7500;
-        addChild( vid_outDescription );
-        addChild( metaTextTitle );
-
-        vid_inDescription.text = "\n\n\n\n                  H.264-encoded video \n\n" +
+        vid_inDescription.text = "\n\n                  H.264-encoded video \n\n" +
                 "                  Streaming from Server";
         vid_inDescription.background = true;
         vid_inDescription.backgroundColor =0x1F1F1F;
         vid_inDescription.textColor = 0xD9D9D9;
         vid_inDescription.x = vid_in.x;
-        vid_inDescription.y = cam.height;
+        vid_inDescription.y = vid_in.y + cam.height;
         vid_inDescription.width = cam.width;
-        vid_inDescription.height = 200;
+        vid_inDescription.height = _INFO_VIDEO_HEIGHT;
         vid_inDescription.border = true;
         vid_inDescription.borderColor = 0xDD7500;
         addChild( vid_inDescription );
 
-        for ( var settings:String in o )
-        {
-            trace( settings + " = " + o[settings] );
+        vid_outDescription.text = "\n\n                 Live video from webcam \n\n" +
+                "	              Encoded to H.264 in Flash Player";
+        vid_outDescription.background = true;
+        vid_outDescription.backgroundColor = 0x1F1F1F;
+        vid_outDescription.textColor = 0xD9D9D9;
+        vid_outDescription.x = vid_out.x;
+        vid_outDescription.y = vid_out.y + cam.height;
+        vid_outDescription.width = cam.width;
+        vid_outDescription.height = _INFO_VIDEO_HEIGHT;
+        vid_outDescription.border = true;
+        vid_outDescription.borderColor = 0xDD7500;
+        addChild( vid_outDescription );
 
+        for ( var settings:String in o ) {
+            trace( settings + " = " + o[settings] );
             metaText.appendText( "\n" + "  " + settings.toUpperCase() + " = " + o[settings] + "\n" );
         }
     }
