@@ -17,23 +17,27 @@ import flash.media.H264VideoStreamSettings;
 import flashx.textLayout.formats.TextAlign;
 
 
-[SWF( width="1180", height="480" )]
+[SWF( width="1180", height="360" )]
 public class Main extends Sprite {
     private var metaText:TextField = new TextField();
     private var vid_outDescription:TextField = new TextField();
-    private var vid_inDescription:TextField = new TextField();
+    private var vid_inDescription_1:TextField = new TextField();
+    private var vid_inDescription_2:TextField = new TextField();
     private var metaTextTitle:TextField = new TextField();
 
-    private var nc:NetConnection;
-    private var ns_in   :NetStream;
+    private var nc_1:NetConnection;
+    private var nc_2:NetConnection;
+    private var ns_in_1   :NetStream;
+    private var ns_in_2   :NetStream;
     private var ns_out  :NetStream;
     private var cam:Camera = Camera.getCamera();
 
     private var vid_out:Video;
-    private var vid_in:Video;
+    private var vid_in_1:Video;
+    private var vid_in_2:Video;
 
     private const _MARGE              :uint = 10;
-    private const _CAM_WIDTH          :uint = 480;
+    private const _CAM_WIDTH          :uint = 320;
     private const _CAM_HEIGHT         :uint = _CAM_WIDTH*(3/4);
     private const _INFO_ENCODING_WIDTH:uint = 200;
     private const _INFO_VIDEO_HEIGHT  :uint = 100;
@@ -47,11 +51,16 @@ public class Main extends Sprite {
 
     //Called from class constructor, this function establishes a new NetConnection and listens for its status
     private function initConnection():void {
-        nc = new NetConnection();
-        nc.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-        nc.connect("rtmp://ec2-54-76-151-124.eu-west-1.compute.amazonaws.com/livepkgr/livestream?adbe-live-event=liveevent&adbe-record-mode=record");
+        nc_1 = new NetConnection();
+        nc_1.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus_1);
+        nc_1.connect("rtmp://ec2-54-76-151-124.eu-west-1.compute.amazonaws.com/livepkgr/livestream?adbe-live-event=liveevent&adbe-record-mode=record");
         //nc.connect("rtmp://example.com/application/mp4:myVideo.mp4");
-        nc.client = this;   // TODO Gare !
+        nc_1.client = this;   // TODO Gare !
+
+        nc_2 = new NetConnection();
+        nc_2.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus_2);
+        nc_2.connect("rtmp://ec2-54-154-78-193.eu-west-1.compute.amazonaws.com/livepkgr/livestreamMat?adbe-live-event=liveevent&adbe-record-mode=record");
+        nc_2.client = this;   // TODO Gare !
 
         cam.setQuality(90000, 90);
         cam.setMode(_CAM_WIDTH, _CAM_HEIGHT, 30, true);
@@ -66,28 +75,43 @@ public class Main extends Sprite {
 
         displayPublishingVideo();
 
-        vid_in = new Video();
-        vid_in.x = vid_out.x + vid_out.width;
-        vid_in.y = vid_out.y;
-        addChild( vid_in );
+        vid_in_1 = new Video();
+        vid_in_1.x = vid_out.x + vid_out.width;
+        vid_in_1.y = vid_out.y;
+        addChild( vid_in_1 );
+
+        vid_in_2 = new Video();
+        vid_in_2.x = vid_in_1.x + vid_in_1.width;
+        vid_in_2.y = vid_in_1.y;
+        addChild( vid_in_2 );
 
     }
 
     //It's a best practice to always check for a successful NetConnection
-    protected function onNetStatus(event:NetStatusEvent):void
+    protected function onNetStatus_1(event:NetStatusEvent):void
     {
         trace(event.info.code);
 
         if( event.info.code == "NetConnection.Connect.Success" ) {
             publishCamera();
-            displayPlaybackVideo();
+            displayPlaybackVideo_1();
+        }
+    }
+
+    //It's a best practice to always check for a successful NetConnection
+    protected function onNetStatus_2(event:NetStatusEvent):void
+    {
+        trace(event.info.code);
+
+        if( event.info.code == "NetConnection.Connect.Success" ) {
+            displayPlaybackVideo_2();
         }
     }
 
     //The encoding settings are set on the publishing stream
     protected function publishCamera():void
     {
-        ns_out = new NetStream( nc );
+        ns_out = new NetStream( nc_1 );
         ns_out.attachCamera( cam );
 
         var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
@@ -115,12 +139,19 @@ public class Main extends Sprite {
     }
 
     //Display the incoming video stream in the UI
-    protected function displayPlaybackVideo():void {
-        ns_in = new NetStream(nc);
-        ns_in.client = this;
-        ns_in.play("mp4:webCam.f4v");
-        vid_in.attachNetStream(ns_in);
+    protected function displayPlaybackVideo_1():void {
+        ns_in_1 = new NetStream(nc_1);
+        ns_in_1.client = this;
+        ns_in_1.play("mp4:webCam.f4v");
+        vid_in_1.attachNetStream(ns_in_1);
+    }
 
+    //Display the incoming video stream in the UI
+    protected function displayPlaybackVideo_2():void {
+        ns_in_2 = new NetStream(nc_2);
+        ns_in_2.client = this;
+        ns_in_2.play("mp4:webCam.f4v");
+        vid_in_2.attachNetStream(ns_in_2);
     }
 
     //Step 11: Un-comment this necessary callback function that checks bandwith (remains empty in this case)
@@ -168,18 +199,31 @@ public class Main extends Sprite {
         vid_outDescription.borderColor = 0xDD7500;
         addChild( vid_outDescription );
 
-        vid_inDescription.text = "\n\n                  H.264-encoded video \n\n" +
-                "                  Streaming from Server";
-        vid_inDescription.background = true;
-        vid_inDescription.backgroundColor =0x1F1F1F;
-        vid_inDescription.textColor = 0xD9D9D9;
-        vid_inDescription.x = vid_in.x;
-        vid_inDescription.y = vid_in.y + cam.height;
-        vid_inDescription.width = cam.width;
-        vid_inDescription.height = _INFO_VIDEO_HEIGHT;
-        vid_inDescription.border = true;
-        vid_inDescription.borderColor = 0xDD7500;
-        addChild( vid_inDescription );
+        vid_inDescription_1.text = "\n\n                  H.264-encoded video \n\n" +
+                "                  Streaming from Server 1";
+        vid_inDescription_1.background = true;
+        vid_inDescription_1.backgroundColor =0x1F1F1F;
+        vid_inDescription_1.textColor = 0xD9D9D9;
+        vid_inDescription_1.x = vid_in_1.x;
+        vid_inDescription_1.y = vid_in_1.y + cam.height;
+        vid_inDescription_1.width = cam.width;
+        vid_inDescription_1.height = _INFO_VIDEO_HEIGHT;
+        vid_inDescription_1.border = true;
+        vid_inDescription_1.borderColor = 0xDD7500;
+        addChild( vid_inDescription_1 );
+
+        vid_inDescription_2.text = "\n\n                  H.264-encoded video \n\n" +
+                "                  Streaming from Server 2";
+        vid_inDescription_2.background = true;
+        vid_inDescription_2.backgroundColor =0x1F1F1F;
+        vid_inDescription_2.textColor = 0xD9D9D9;
+        vid_inDescription_2.x = vid_in_2.x;
+        vid_inDescription_2.y = vid_in_2.y + cam.height;
+        vid_inDescription_2.width = cam.width;
+        vid_inDescription_2.height = _INFO_VIDEO_HEIGHT;
+        vid_inDescription_2.border = true;
+        vid_inDescription_2.borderColor = 0xDD7500;
+        addChild( vid_inDescription_2 );
 
         for ( var settings:String in o ) {
             trace( settings + " = " + o[settings] );
