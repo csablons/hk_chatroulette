@@ -4,6 +4,7 @@ import flash.display.DisplayObject;
 import flash.display.Sprite;
 import flash.events.NetStatusEvent;
 import flash.media.Camera;
+import flash.media.Microphone;
 import flash.media.H264Level;
 import flash.media.H264Profile;
 import flash.media.Video;
@@ -17,7 +18,7 @@ import flash.media.H264VideoStreamSettings;
 import flashx.textLayout.formats.TextAlign;
 
 
-[SWF( width="1180", height="360" )]
+[SWF( width="2160", height="600" )]
 public class Main extends Sprite {
     private var metaText:TextField = new TextField();
     private var vid_outDescription:TextField = new TextField();
@@ -31,6 +32,7 @@ public class Main extends Sprite {
     private var ns_in_2   :NetStream;
     private var ns_out  :NetStream;
     private var cam:Camera = Camera.getCamera();
+    private var mic:Microphone = Microphone.getMicrophone();
 
     private var vid_out:Video;
     private var vid_in_1:Video;
@@ -62,7 +64,7 @@ public class Main extends Sprite {
         nc_2.connect("rtmp://ec2-54-154-78-193.eu-west-1.compute.amazonaws.com/livepkgr/livestreamMat?adbe-live-event=liveevent&adbe-record-mode=record");
         nc_2.client = this;   // TODO Gare !
 
-        cam.setQuality(90000, 90);
+        cam.setQuality(0, 100);
         cam.setMode(_CAM_WIDTH, _CAM_HEIGHT, 30, true);
         cam.setKeyFrameInterval(15);
 
@@ -78,11 +80,15 @@ public class Main extends Sprite {
         vid_in_1 = new Video();
         vid_in_1.x = vid_out.x + vid_out.width;
         vid_in_1.y = vid_out.y;
+        vid_in_1.width = _CAM_WIDTH;
+        vid_in_1.height = _CAM_HEIGHT;
         addChild( vid_in_1 );
 
         vid_in_2 = new Video();
         vid_in_2.x = vid_in_1.x + vid_in_1.width;
         vid_in_2.y = vid_in_1.y;
+        vid_in_2.width = _CAM_WIDTH;
+        vid_in_2.height = _CAM_HEIGHT;
         addChild( vid_in_2 );
 
     }
@@ -113,6 +119,7 @@ public class Main extends Sprite {
     {
         ns_out = new NetStream( nc_1 );
         ns_out.attachCamera( cam );
+        ns_out.attachAudio( mic );
 
         var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
         h264Settings.setProfileLevel( H264Profile.BASELINE, H264Level.LEVEL_3_1 );
@@ -192,8 +199,8 @@ public class Main extends Sprite {
         vid_outDescription.backgroundColor = 0x1F1F1F;
         vid_outDescription.textColor = 0xD9D9D9;
         vid_outDescription.x = vid_out.x;
-        vid_outDescription.y = vid_out.y + cam.height;
-        vid_outDescription.width = cam.width;
+        vid_outDescription.y = vid_out.y + vid_out.height;
+        vid_outDescription.width = vid_out.width;
         vid_outDescription.height = _INFO_VIDEO_HEIGHT;
         vid_outDescription.border = true;
         vid_outDescription.borderColor = 0xDD7500;
@@ -205,8 +212,8 @@ public class Main extends Sprite {
         vid_inDescription_1.backgroundColor =0x1F1F1F;
         vid_inDescription_1.textColor = 0xD9D9D9;
         vid_inDescription_1.x = vid_in_1.x;
-        vid_inDescription_1.y = vid_in_1.y + cam.height;
-        vid_inDescription_1.width = cam.width;
+        vid_inDescription_1.y = vid_in_1.y + vid_in_1.height;
+        vid_inDescription_1.width = vid_in_1.width;
         vid_inDescription_1.height = _INFO_VIDEO_HEIGHT;
         vid_inDescription_1.border = true;
         vid_inDescription_1.borderColor = 0xDD7500;
@@ -218,8 +225,8 @@ public class Main extends Sprite {
         vid_inDescription_2.backgroundColor =0x1F1F1F;
         vid_inDescription_2.textColor = 0xD9D9D9;
         vid_inDescription_2.x = vid_in_2.x;
-        vid_inDescription_2.y = vid_in_2.y + cam.height;
-        vid_inDescription_2.width = cam.width;
+        vid_inDescription_2.y = vid_in_2.y + vid_in_2.height;
+        vid_inDescription_2.width = vid_in_2.width;
         vid_inDescription_2.height = _INFO_VIDEO_HEIGHT;
         vid_inDescription_2.border = true;
         vid_inDescription_2.borderColor = 0xDD7500;
@@ -227,7 +234,7 @@ public class Main extends Sprite {
 
         for ( var settings:String in o ) {
             trace( settings + " = " + o[settings] );
-            metaText.appendText( "\n" + "  " + settings.toUpperCase() + " = " + o[settings] + "\n" );
+            metaText.appendText("  " + settings.toUpperCase() + " = " + o[settings]+"\n");
         }
     }
 }
