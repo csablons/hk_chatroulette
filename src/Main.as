@@ -93,7 +93,6 @@ public class Main extends Sprite {
         var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
         h264Settings.setProfileLevel( H264Profile.BASELINE, H264Level.LEVEL_3_1 );
 
-
         ns_out.videoStreamSettings = h264Settings;
         ns_out.publish( "mp4:webCam.f4v", "live" );
 
@@ -111,31 +110,24 @@ public class Main extends Sprite {
     }
 
     //Display the outgoing video stream in the UI
-    protected function displayPublishingVideo():void
-    {
-        vid_out.attachCamera( cam );
+    protected function displayPublishingVideo():void {
+        vid_out.attachCamera(cam);
     }
 
     //Display the incoming video stream in the UI
-    protected function displayPlaybackVideo():void
-    {
-        ns_in = new NetStream( nc );
-
+    protected function displayPlaybackVideo():void {
+        ns_in = new NetStream(nc);
         ns_in.client = this;
-
-        ns_in.play( "mp4:webCam.f4v" );
-
-        vid_in.attachNetStream( ns_in );
+        ns_in.play("mp4:webCam.f4v");
+        vid_in.attachNetStream(ns_in);
 
     }
 
     //Step 11: Un-comment this necessary callback function that checks bandwith (remains empty in this case)
-    public function onBWDone():void
-    {
-    }
+    public function onBWDone():void {}
 
     //Display stream metadata and lays out visual components in the UI
-    public function onMetaData( o:Object ):void {
+    public function onMetaData(o:Object):void {
         metaTextTitle.text = "- Encoding Settings -";
         var stylr:TextFormat = new TextFormat();
             stylr.size = 18;
@@ -163,19 +155,6 @@ public class Main extends Sprite {
         metaText.borderColor = 0xDD7500;
         addChild( metaText );
 
-        vid_inDescription.text = "\n\n                  H.264-encoded video \n\n" +
-                "                  Streaming from Server";
-        vid_inDescription.background = true;
-        vid_inDescription.backgroundColor =0x1F1F1F;
-        vid_inDescription.textColor = 0xD9D9D9;
-        vid_inDescription.x = vid_in.x;
-        vid_inDescription.y = vid_in.y + cam.height;
-        vid_inDescription.width = cam.width;
-        vid_inDescription.height = _INFO_VIDEO_HEIGHT;
-        vid_inDescription.border = true;
-        vid_inDescription.borderColor = 0xDD7500;
-        addChild( vid_inDescription );
-
         vid_outDescription.text = "\n\n                 Live video from webcam \n\n" +
                 "	              Encoded to H.264 in Flash Player";
         vid_outDescription.background = true;
@@ -188,6 +167,19 @@ public class Main extends Sprite {
         vid_outDescription.border = true;
         vid_outDescription.borderColor = 0xDD7500;
         addChild( vid_outDescription );
+
+        vid_inDescription.text = "\n\n                  H.264-encoded video \n\n" +
+                "                  Streaming from Server";
+        vid_inDescription.background = true;
+        vid_inDescription.backgroundColor =0x1F1F1F;
+        vid_inDescription.textColor = 0xD9D9D9;
+        vid_inDescription.x = vid_in.x;
+        vid_inDescription.y = vid_in.y + cam.height;
+        vid_inDescription.width = cam.width;
+        vid_inDescription.height = _INFO_VIDEO_HEIGHT;
+        vid_inDescription.border = true;
+        vid_inDescription.borderColor = 0xDD7500;
+        addChild( vid_inDescription );
 
         for ( var settings:String in o ) {
             trace( settings + " = " + o[settings] );
