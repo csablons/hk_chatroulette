@@ -42,8 +42,18 @@ public class Main extends Sprite {
     private const _INFO_ENCODING_WIDTH:uint = 200;
     private const _INFO_VIDEO_HEIGHT  :uint = 100;
     private const _TIMER              :uint = 10000;
-    private const _SERVER             :String = "rtmp://ec2-54-154-115-164.eu-west-1.compute.amazonaws.com/livepkgr";
-    private const _STREAM_1           :String = "livestreamCha";
+
+    private const _PROTOCOL           :String = "rtmp://";
+    private const _SERVER             :String = "ec2-54-154-129-243.eu-west-1.compute.amazonaws.com";
+//    private const _SERVICE            :String = "livepkgr";
+//    private const _STREAM_1           :String = "livestream";
+//    private const _STREAM_2           :String = "livestreamMat";
+//    private const _PARAMS             :String = "?adbe-live-event=liveevent&adbe-record-mode=record";
+
+//    private const _PROTOCOL           :String = "rtmfp://";
+//    private const _SERVER             :String = "ec2-54-154-108-11.eu-west-1.compute.amazonaws.com";
+    private const _SERVICE            :String = "livepkgr";
+    private const _STREAM_1           :String = "livestream";
     private const _STREAM_2           :String = "livestreamMat";
     private const _PARAMS             :String = "?adbe-live-event=liveevent&adbe-record-mode=record";
 
@@ -63,13 +73,18 @@ public class Main extends Sprite {
     private function initConnection():void {
         nc_mySelf = new NetConnection();
         nc_mySelf.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus_mySelf);
-        nc_mySelf.connect(_SERVER+"/"+_STREAM_1+_PARAMS);
+        nc_mySelf.connect(_PROTOCOL+_SERVER);
+        nc_mySelf.client = this;
+
+        /*nc_mySelf = new NetConnection();
+        nc_mySelf.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus_mySelf);
+        nc_mySelf.connect(_PROTOCOL+_SERVER+"/"+_SERVICE+"/"+_STREAM_1+_PARAMS);
         nc_mySelf.client = this;
 
         nc_2 = new NetConnection();
         nc_2.addEventListener(NetStatusEvent.NET_STATUS, _onNetStatus_others);
-        nc_2.connect(_SERVER+"/"+_STREAM_2+_PARAMS);
-        nc_2.client = this;
+        nc_2.connect(_PROTOCOL+_SERVER+"/"+_SERVICE+"/"+_STREAM_2+_PARAMS);
+        nc_2.client = this;*/
 
         cam.setQuality(0, 100);
         cam.setMode(_CAM_WIDTH, _CAM_HEIGHT, 15, true);
